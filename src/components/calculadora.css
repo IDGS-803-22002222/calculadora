@@ -1,3 +1,4 @@
+@import "tailwindcss";
 /* calculadora.css */
 .resistor-container {
   display: flex;
