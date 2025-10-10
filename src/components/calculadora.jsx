@@ -1,5 +1,4 @@
-import { useState } from "react";
-import "../components/calculadora.css";
+import { useState, useEffect } from "react";
 
 export default function Calculadora() {
   const [bandas, setBandas] = useState({
@@ -8,6 +7,17 @@ export default function Calculadora() {
     multiplicador: "100",
     tolerancia: "5",
   });
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const colores = {
     0: { nombre: "Negro", color: "#1a1a1a", texto: "white" },
@@ -80,13 +90,9 @@ export default function Calculadora() {
   };
 
   const formatearValor = (valor) => {
-    if (valor >= 1000000) {
-      return `${(valor / 1000000).toFixed(2)} MΩ`;
-    } else if (valor >= 1000) {
-      return `${(valor / 1000).toFixed(2)} kΩ`;
-    } else {
-      return `${valor.toFixed(2)} Ω`;
-    }
+    if (valor >= 1000000) return `${(valor / 1000000).toFixed(2)} MΩ`;
+    else if (valor >= 1000) return `${(valor / 1000).toFixed(2)} kΩ`;
+    else return `${valor.toFixed(2)} Ω`;
   };
 
   const handleChange = (banda, valor) => {
@@ -95,210 +101,631 @@ export default function Calculadora() {
 
   const valorResistencia = calcularResistencia();
 
+  const resistorSize = isMobile
+    ? { width: 240, height: 60, band: 12, gap: 20, wire: 40 }
+    : { width: 320, height: 80, band: 16, gap: 30, wire: 60 };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-950 to-gray-900 py-8 px-4">
-      <div className="max-w-6xl mx-auto">
+    <div
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "#f9fafb",
+        padding: isMobile ? "1.5rem 1rem" : "3rem 2rem",
+        fontFamily: "system-ui, -apple-system, sans-serif",
+      }}
+    >
+      <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
         {/* Header */}
-        <div className="text-center mb-10">
-          <h1 className="text-5xl font-extrabold text-white mb-3 drop-shadow-lg">
-            ⚡ Calculadora de Resistencias
+        <div
+          style={{
+            marginBottom: isMobile ? "2rem" : "3rem",
+            textAlign: "center",
+          }}
+        >
+          <h1
+            style={{
+              fontSize: isMobile ? "1.75rem" : "2.5rem",
+              fontWeight: "bold",
+              color: "#111827",
+              marginBottom: "0.5rem",
+            }}
+          >
+            Calculadora de Resistencias
           </h1>
-          <p className="text-blue-300 text-lg">Código de colores • 4 bandas</p>
+          <p
+            style={{
+              color: "#6b7280",
+              fontSize: isMobile ? "0.95rem" : "1.125rem",
+            }}
+          >
+            Código de colores - 4 bandas
+          </p>
         </div>
 
-        {/* Visualización Principal */}
-        <div className="bg-gradient-to-br from-white to-gray-100 rounded-3xl p-10 shadow-2xl mb-8 border-4 border-gray-300">
-          {/* Resistencia Visual */}
-          <div className="flex justify-center items-center mb-10">
-            <div className="resistor-container">
-              <div className="resistor-wire resistor-wire-left"></div>
-              <div className="resistor-body">
-                <div className="resistor-bands">
+        {/* Layout principal */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "repeat(12, 1fr)",
+            gap: isMobile ? "1.5rem" : "2rem",
+            alignItems: "start",
+          }}
+        >
+          {/* Panel izquierdo - Visualización */}
+          <div style={{ gridColumn: isMobile ? "span 1" : "span 5" }}>
+            <div
+              style={{
+                backgroundColor: "white",
+                borderRadius: "0.75rem",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                padding: isMobile ? "1.5rem" : "2.5rem",
+              }}
+            >
+              <h2
+                style={{
+                  fontSize: isMobile ? "1.125rem" : "1.25rem",
+                  fontWeight: "600",
+                  color: "#111827",
+                  marginBottom: isMobile ? "1.5rem" : "2rem",
+                  textAlign: "center",
+                }}
+              >
+                Visualización
+              </h2>
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginBottom: isMobile ? "2rem" : "3rem",
+                  overflowX: "auto",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
                   <div
-                    className="resistor-band"
-                    style={{ backgroundColor: colores[bandas.banda1].color }}
-                  ></div>
-                  <div
-                    className="resistor-band"
-                    style={{ backgroundColor: colores[bandas.banda2].color }}
-                  ></div>
-                  <div
-                    className="resistor-band"
                     style={{
-                      backgroundColor:
-                        multiplicadores[bandas.multiplicador].color,
+                      width: resistorSize.wire + "px",
+                      height: "3px",
+                      background: "#888",
                     }}
                   ></div>
-                  <div className="resistor-gap"></div>
+
                   <div
-                    className="resistor-band"
                     style={{
-                      backgroundColor: tolerancias[bandas.tolerancia].color,
+                      width: resistorSize.width + "px",
+                      height: resistorSize.height + "px",
+                      background:
+                        "linear-gradient(180deg, #f5e6d3 0%, #d4b896 50%, #f5e6d3 100%)",
+                      borderRadius: resistorSize.height / 2 + "px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      border: "2px solid #c4a875",
+                      boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: isMobile ? "8px" : "12px",
+                        height: "100%",
+                        padding: isMobile ? "0 12px" : "0 20px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: resistorSize.band + "px",
+                          height: "100%",
+                          backgroundColor: colores[bandas.banda1].color,
+                        }}
+                      ></div>
+
+                      <div
+                        style={{
+                          width: resistorSize.band + "px",
+                          height: "100%",
+                          backgroundColor: colores[bandas.banda2].color,
+                        }}
+                      ></div>
+
+                      <div
+                        style={{
+                          width: resistorSize.band + "px",
+                          height: "100%",
+                          backgroundColor:
+                            multiplicadores[bandas.multiplicador].color,
+                        }}
+                      ></div>
+
+                      <div style={{ width: resistorSize.gap + "px" }}></div>
+
+                      <div
+                        style={{
+                          width: resistorSize.band + "px",
+                          height: "100%",
+                          backgroundColor: tolerancias[bandas.tolerancia].color,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      width: resistorSize.wire + "px",
+                      height: "3px",
+                      background: "#888",
                     }}
                   ></div>
                 </div>
               </div>
-              <div className="resistor-wire resistor-wire-right"></div>
+
+              {/* Resultado */}
+              <div
+                style={{
+                  textAlign: "center",
+                  borderTop: "2px solid #e5e7eb",
+                  paddingTop: isMobile ? "1.5rem" : "2rem",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: isMobile ? "2.5rem" : "3.5rem",
+                    fontWeight: "bold",
+                    color: "#111827",
+                    marginBottom: "0.5rem",
+                    lineHeight: "1",
+                  }}
+                >
+                  {formatearValor(valorResistencia)}
+                </div>
+                <div
+                  style={{
+                    fontSize: isMobile ? "1.125rem" : "1.5rem",
+                    color: "#6b7280",
+                    marginTop: "1rem",
+                  }}
+                >
+                  Tolerancia: {tolerancias[bandas.tolerancia].display}
+                </div>
+              </div>
             </div>
+
+            {/* Guía */}
+            {!isMobile && (
+              <div
+                style={{
+                  backgroundColor: "white",
+                  borderRadius: "0.75rem",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                  padding: "2rem",
+                  marginTop: "2rem",
+                }}
+              >
+                <h3
+                  style={{
+                    fontSize: "1.125rem",
+                    fontWeight: "600",
+                    color: "#111827",
+                    marginBottom: "1.25rem",
+                  }}
+                >
+                  Guía de uso
+                </h3>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.75rem",
+                    fontSize: "0.95rem",
+                    color: "#374151",
+                  }}
+                >
+                  <div
+                    style={{
+                      borderLeft: "4px solid #3b82f6",
+                      paddingLeft: "1rem",
+                      paddingTop: "0.5rem",
+                      paddingBottom: "0.5rem",
+                    }}
+                  >
+                    <strong>Banda 1:</strong> Primer dígito del valor
+                  </div>
+                  <div
+                    style={{
+                      borderLeft: "4px solid #3b82f6",
+                      paddingLeft: "1rem",
+                      paddingTop: "0.5rem",
+                      paddingBottom: "0.5rem",
+                    }}
+                  >
+                    <strong>Banda 2:</strong> Segundo dígito del valor
+                  </div>
+                  <div
+                    style={{
+                      borderLeft: "4px solid #3b82f6",
+                      paddingLeft: "1rem",
+                      paddingTop: "0.5rem",
+                      paddingBottom: "0.5rem",
+                    }}
+                  >
+                    <strong>Banda 3:</strong> Factor multiplicador
+                  </div>
+                  <div
+                    style={{
+                      borderLeft: "4px solid #3b82f6",
+                      paddingLeft: "1rem",
+                      paddingTop: "0.5rem",
+                      paddingBottom: "0.5rem",
+                    }}
+                  >
+                    <strong>Banda 4:</strong> Tolerancia o precisión
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Resultado */}
-          <div className="text-center bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 shadow-lg">
-            <div className="text-6xl font-black text-white mb-3 tracking-tight">
-              {formatearValor(valorResistencia)}
-            </div>
-            <div className="text-3xl text-blue-100 font-semibold">
-              {tolerancias[bandas.tolerancia].display}
+          {/* Panel derecho - Controles */}
+          <div style={{ gridColumn: isMobile ? "span 1" : "span 7" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)",
+                gap: isMobile ? "1rem" : "1.5rem",
+              }}
+            >
+              {/* Banda 1 */}
+              <div
+                style={{
+                  backgroundColor: "white",
+                  borderRadius: "0.75rem",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                  padding: isMobile ? "1.25rem" : "1.5rem",
+                }}
+              >
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "0.75rem",
+                    fontWeight: "600",
+                    color: "#6b7280",
+                    marginBottom: "0.25rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  Banda 1
+                </label>
+                <h3
+                  style={{
+                    fontSize: isMobile ? "1.125rem" : "1.25rem",
+                    fontWeight: "600",
+                    color: "#111827",
+                    marginBottom: "0.75rem",
+                  }}
+                >
+                  Primer dígito
+                </h3>
+                <select
+                  value={bandas.banda1}
+                  onChange={(e) => handleChange("banda1", e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: isMobile ? "0.625rem" : "0.75rem",
+                    border: "2px solid #d1d5db",
+                    borderRadius: "0.5rem",
+                    fontSize: isMobile ? "0.95rem" : "1rem",
+                    outline: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  {Object.entries(colores).map(([valor, { nombre }]) => (
+                    <option key={valor} value={valor}>
+                      {nombre} - {valor}
+                    </option>
+                  ))}
+                </select>
+                <div
+                  style={{
+                    marginTop: "0.75rem",
+                    padding: isMobile ? "1rem" : "1.25rem",
+                    borderRadius: "0.5rem",
+                    textAlign: "center",
+                    fontSize: isMobile ? "1rem" : "1.125rem",
+                    fontWeight: "600",
+                    backgroundColor: colores[bandas.banda1].color,
+                    color: colores[bandas.banda1].texto,
+                  }}
+                >
+                  {colores[bandas.banda1].nombre}
+                </div>
+              </div>
+
+              {/* Banda 2 */}
+              <div
+                style={{
+                  backgroundColor: "white",
+                  borderRadius: "0.75rem",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                  padding: isMobile ? "1.25rem" : "1.5rem",
+                }}
+              >
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "0.75rem",
+                    fontWeight: "600",
+                    color: "#6b7280",
+                    marginBottom: "0.25rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  Banda 2
+                </label>
+                <h3
+                  style={{
+                    fontSize: isMobile ? "1.125rem" : "1.25rem",
+                    fontWeight: "600",
+                    color: "#111827",
+                    marginBottom: "0.75rem",
+                  }}
+                >
+                  Segundo dígito
+                </h3>
+                <select
+                  value={bandas.banda2}
+                  onChange={(e) => handleChange("banda2", e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: isMobile ? "0.625rem" : "0.75rem",
+                    border: "2px solid #d1d5db",
+                    borderRadius: "0.5rem",
+                    fontSize: isMobile ? "0.95rem" : "1rem",
+                    outline: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  {Object.entries(colores).map(([valor, { nombre }]) => (
+                    <option key={valor} value={valor}>
+                      {nombre} - {valor}
+                    </option>
+                  ))}
+                </select>
+                <div
+                  style={{
+                    marginTop: "0.75rem",
+                    padding: isMobile ? "1rem" : "1.25rem",
+                    borderRadius: "0.5rem",
+                    textAlign: "center",
+                    fontSize: isMobile ? "1rem" : "1.125rem",
+                    fontWeight: "600",
+                    backgroundColor: colores[bandas.banda2].color,
+                    color: colores[bandas.banda2].texto,
+                  }}
+                >
+                  {colores[bandas.banda2].nombre}
+                </div>
+              </div>
+
+              {/* Multiplicador */}
+              <div
+                style={{
+                  backgroundColor: "white",
+                  borderRadius: "0.75rem",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                  padding: isMobile ? "1.25rem" : "1.5rem",
+                }}
+              >
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "0.75rem",
+                    fontWeight: "600",
+                    color: "#6b7280",
+                    marginBottom: "0.25rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  Banda 3
+                </label>
+                <h3
+                  style={{
+                    fontSize: isMobile ? "1.125rem" : "1.25rem",
+                    fontWeight: "600",
+                    color: "#111827",
+                    marginBottom: "0.75rem",
+                  }}
+                >
+                  Multiplicador
+                </h3>
+                <select
+                  value={bandas.multiplicador}
+                  onChange={(e) =>
+                    handleChange("multiplicador", e.target.value)
+                  }
+                  style={{
+                    width: "100%",
+                    padding: isMobile ? "0.625rem" : "0.75rem",
+                    border: "2px solid #d1d5db",
+                    borderRadius: "0.5rem",
+                    fontSize: isMobile ? "0.95rem" : "1rem",
+                    outline: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  {Object.entries(multiplicadores).map(
+                    ([valor, { nombre, display }]) => (
+                      <option key={valor} value={valor}>
+                        {nombre} {display}
+                      </option>
+                    )
+                  )}
+                </select>
+                <div
+                  style={{
+                    marginTop: "0.75rem",
+                    padding: isMobile ? "1rem" : "1.25rem",
+                    borderRadius: "0.5rem",
+                    textAlign: "center",
+                    fontSize: isMobile ? "1rem" : "1.125rem",
+                    fontWeight: "600",
+                    backgroundColor:
+                      multiplicadores[bandas.multiplicador].color,
+                    color: multiplicadores[bandas.multiplicador].texto,
+                  }}
+                >
+                  {multiplicadores[bandas.multiplicador].display}
+                </div>
+              </div>
+
+              {/* Tolerancia */}
+              <div
+                style={{
+                  backgroundColor: "white",
+                  borderRadius: "0.75rem",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                  padding: isMobile ? "1.25rem" : "1.5rem",
+                }}
+              >
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "0.75rem",
+                    fontWeight: "600",
+                    color: "#6b7280",
+                    marginBottom: "0.25rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  Banda 4
+                </label>
+                <h3
+                  style={{
+                    fontSize: isMobile ? "1.125rem" : "1.25rem",
+                    fontWeight: "600",
+                    color: "#111827",
+                    marginBottom: "0.75rem",
+                  }}
+                >
+                  Tolerancia
+                </h3>
+                <select
+                  value={bandas.tolerancia}
+                  onChange={(e) => handleChange("tolerancia", e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: isMobile ? "0.625rem" : "0.75rem",
+                    border: "2px solid #d1d5db",
+                    borderRadius: "0.5rem",
+                    fontSize: isMobile ? "0.95rem" : "1rem",
+                    outline: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  {Object.entries(tolerancias).map(
+                    ([valor, { nombre, display }]) => (
+                      <option key={valor} value={valor}>
+                        {nombre} {display}
+                      </option>
+                    )
+                  )}
+                </select>
+                <div
+                  style={{
+                    marginTop: "0.75rem",
+                    padding: isMobile ? "1rem" : "1.25rem",
+                    borderRadius: "0.5rem",
+                    textAlign: "center",
+                    fontSize: isMobile ? "1rem" : "1.125rem",
+                    fontWeight: "600",
+                    backgroundColor: tolerancias[bandas.tolerancia].color,
+                    color: "#000",
+                  }}
+                >
+                  {tolerancias[bandas.tolerancia].display}
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Panel de Controles */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Banda 1 */}
-          <div className="bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-            <label className="block text-sm font-bold text-gray-500 uppercase tracking-wide mb-2">
-              Banda 1
-            </label>
-            <h3 className="text-xl font-bold text-gray-800 mb-4">
-              Primer Dígito
-            </h3>
-            <select
-              value={bandas.banda1}
-              onChange={(e) => handleChange("banda1", e.target.value)}
-              className="w-full p-3 border-3 border-gray-300 rounded-xl text-base font-semibold focus:border-blue-500 focus:ring-4 focus:ring-blue-200 focus:outline-none transition-all"
-            >
-              {Object.entries(colores).map(([valor, { nombre }]) => (
-                <option key={valor} value={valor}>
-                  {nombre} - {valor}
-                </option>
-              ))}
-            </select>
-            <div
-              className="mt-4 p-5 rounded-xl text-center font-bold text-xl shadow-inner"
+        {isMobile && (
+          <div
+            style={{
+              backgroundColor: "white",
+              borderRadius: "0.75rem",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+              padding: "1.5rem",
+              marginTop: "1.5rem",
+            }}
+          >
+            <h3
               style={{
-                backgroundColor: colores[bandas.banda1].color,
-                color: colores[bandas.banda1].texto,
+                fontSize: "1rem",
+                fontWeight: "600",
+                color: "#111827",
+                marginBottom: "1rem",
               }}
             >
-              {colores[bandas.banda1].nombre}
-            </div>
-          </div>
-
-          {/* Banda 2 */}
-          <div className="bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-            <label className="block text-sm font-bold text-gray-500 uppercase tracking-wide mb-2">
-              Banda 2
-            </label>
-            <h3 className="text-xl font-bold text-gray-800 mb-4">
-              Segundo Dígito
+              Guía de uso
             </h3>
-            <select
-              value={bandas.banda2}
-              onChange={(e) => handleChange("banda2", e.target.value)}
-              className="w-full p-3 border-3 border-gray-300 rounded-xl text-base font-semibold focus:border-blue-500 focus:ring-4 focus:ring-blue-200 focus:outline-none transition-all"
-            >
-              {Object.entries(colores).map(([valor, { nombre }]) => (
-                <option key={valor} value={valor}>
-                  {nombre} - {valor}
-                </option>
-              ))}
-            </select>
             <div
-              className="mt-4 p-5 rounded-xl text-center font-bold text-xl shadow-inner"
               style={{
-                backgroundColor: colores[bandas.banda2].color,
-                color: colores[bandas.banda2].texto,
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.625rem",
+                fontSize: "0.875rem",
+                color: "#374151",
               }}
             >
-              {colores[bandas.banda2].nombre}
+              <div
+                style={{
+                  borderLeft: "3px solid #3b82f6",
+                  paddingLeft: "0.75rem",
+                  paddingTop: "0.375rem",
+                  paddingBottom: "0.375rem",
+                }}
+              >
+                <strong>Banda 1:</strong> Primer dígito
+              </div>
+              <div
+                style={{
+                  borderLeft: "3px solid #3b82f6",
+                  paddingLeft: "0.75rem",
+                  paddingTop: "0.375rem",
+                  paddingBottom: "0.375rem",
+                }}
+              >
+                <strong>Banda 2:</strong> Segundo dígito
+              </div>
+              <div
+                style={{
+                  borderLeft: "3px solid #3b82f6",
+                  paddingLeft: "0.75rem",
+                  paddingTop: "0.375rem",
+                  paddingBottom: "0.375rem",
+                }}
+              >
+                <strong>Banda 3:</strong> Multiplicador
+              </div>
+              <div
+                style={{
+                  borderLeft: "3px solid #3b82f6",
+                  paddingLeft: "0.75rem",
+                  paddingTop: "0.375rem",
+                  paddingBottom: "0.375rem",
+                }}
+              >
+                <strong>Banda 4:</strong> Tolerancia
+              </div>
             </div>
           </div>
-
-          {/* Multiplicador */}
-          <div className="bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-            <label className="block text-sm font-bold text-gray-500 uppercase tracking-wide mb-2">
-              Banda 3
-            </label>
-            <h3 className="text-xl font-bold text-gray-800 mb-4">
-              Multiplicador
-            </h3>
-            <select
-              value={bandas.multiplicador}
-              onChange={(e) => handleChange("multiplicador", e.target.value)}
-              className="w-full p-3 border-3 border-gray-300 rounded-xl text-base font-semibold focus:border-blue-500 focus:ring-4 focus:ring-blue-200 focus:outline-none transition-all"
-            >
-              {Object.entries(multiplicadores).map(
-                ([valor, { nombre, display }]) => (
-                  <option key={valor} value={valor}>
-                    {nombre} {display}
-                  </option>
-                )
-              )}
-            </select>
-            <div
-              className="mt-4 p-5 rounded-xl text-center font-bold text-xl shadow-inner"
-              style={{
-                backgroundColor: multiplicadores[bandas.multiplicador].color,
-                color: multiplicadores[bandas.multiplicador].texto,
-              }}
-            >
-              {multiplicadores[bandas.multiplicador].display}
-            </div>
-          </div>
-
-          {/* Tolerancia */}
-          <div className="bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-            <label className="block text-sm font-bold text-gray-500 uppercase tracking-wide mb-2">
-              Banda 4
-            </label>
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Tolerancia</h3>
-            <select
-              value={bandas.tolerancia}
-              onChange={(e) => handleChange("tolerancia", e.target.value)}
-              className="w-full p-3 border-3 border-gray-300 rounded-xl text-base font-semibold focus:border-blue-500 focus:ring-4 focus:ring-blue-200 focus:outline-none transition-all"
-            >
-              {Object.entries(tolerancias).map(
-                ([valor, { nombre, display }]) => (
-                  <option key={valor} value={valor}>
-                    {nombre} {display}
-                  </option>
-                )
-              )}
-            </select>
-            <div
-              className="mt-4 p-5 rounded-xl text-center font-bold text-xl shadow-inner text-black"
-              style={{ backgroundColor: tolerancias[bandas.tolerancia].color }}
-            >
-              {tolerancias[bandas.tolerancia].display}
-            </div>
-          </div>
-        </div>
-
-        {/* Guía de uso */}
-        <div className="bg-gradient-to-r from-blue-900 to-purple-900 rounded-2xl p-8 shadow-xl">
-          <h3 className="text-2xl font-bold mb-4 text-white flex items-center gap-2">
-            📚 Guía Rápida
-          </h3>
-          <div className="grid md:grid-cols-2 gap-4 text-blue-100">
-            <div className="bg-white bg-opacity-10 rounded-lg p-4 backdrop-blur-sm">
-              <strong className="text-yellow-300">Banda 1:</strong> Primer
-              dígito del valor
-            </div>
-            <div className="bg-white bg-opacity-10 rounded-lg p-4 backdrop-blur-sm">
-              <strong className="text-yellow-300">Banda 2:</strong> Segundo
-              dígito del valor
-            </div>
-            <div className="bg-white bg-opacity-10 rounded-lg p-4 backdrop-blur-sm">
-              <strong className="text-yellow-300">Banda 3:</strong> Factor
-              multiplicador
-            </div>
-            <div className="bg-white bg-opacity-10 rounded-lg p-4 backdrop-blur-sm">
-              <strong className="text-yellow-300">Banda 4:</strong> Tolerancia o
-              precisión
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
