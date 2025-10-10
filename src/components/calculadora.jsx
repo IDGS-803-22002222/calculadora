@@ -109,7 +109,7 @@ export default function Calculadora() {
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: "transparent",
+        backgroundColor: "#ffffff",
         padding: isMobile ? "1.5rem 1rem" : "3rem 2rem",
         fontFamily: "system-ui, -apple-system, sans-serif",
       }}
@@ -155,9 +155,9 @@ export default function Calculadora() {
           <div style={{ gridColumn: isMobile ? "span 1" : "span 5" }}>
             <div
               style={{
-                backgroundColor: "white",
+                backgroundColor: "#f8f9fa",
                 borderRadius: "0.75rem",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
                 padding: isMobile ? "1.5rem" : "2.5rem",
               }}
             >
@@ -296,9 +296,9 @@ export default function Calculadora() {
             {!isMobile && (
               <div
                 style={{
-                  backgroundColor: "white",
+                  backgroundColor: "#f8f9fa",
                   borderRadius: "0.75rem",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
                   padding: "2rem",
                   marginTop: "2rem",
                 }}
@@ -379,9 +379,9 @@ export default function Calculadora() {
               {/* Banda 1 */}
               <div
                 style={{
-                  backgroundColor: "white",
+                  backgroundColor: "#f8f9fa",
                   borderRadius: "0.75rem",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
                   padding: isMobile ? "1.25rem" : "1.5rem",
                 }}
               >
