@@ -109,7 +109,7 @@ export default function Calculadora() {
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: "#f9fafb",
+        backgroundColor: "transparent",
         padding: isMobile ? "1.5rem 1rem" : "3rem 2rem",
         fontFamily: "system-ui, -apple-system, sans-serif",
       }}
@@ -654,6 +654,7 @@ export default function Calculadora() {
           </div>
         </div>
 
+        {/* Guía móvil */}
         {isMobile && (
           <div
             style={{
